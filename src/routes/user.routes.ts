@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { UserController } from '../controllers/user.controller';
-import { validateCreateUserPayload } from '../middlewares/validateUser.middlewares';
+import { validateCreateUserPayload } from '../middlewares/validateUser.middleware';
  
 const router = Router();
  
