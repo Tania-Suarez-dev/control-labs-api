@@ -8,6 +8,6 @@ const router = Router();
 router.use('/loans', loanRoutes);
 router.use('/users', userRoutes);
 router.use('/rooms', roomRoutes);
-router.use('/equipment', equipmentRoutes);
+router.use('/equipments', equipmentRoutes);
  
 export default router;
