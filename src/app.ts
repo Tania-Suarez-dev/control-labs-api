@@ -12,12 +12,6 @@ app.use(requestLogger);
 
 app.use('/api/v1', apiRoutes);
 
-app.use((_req, res) => {
-  res.status(404).json({ success: false, error: 'Ruta no encontrada.' });
-});
-
-app.use(globalErrorHandler);
-
 app.get('/api/v1/health', (req: Request, res: Response) => {
   res.status(200).json({
     status: 'success',
@@ -25,5 +19,11 @@ app.get('/api/v1/health', (req: Request, res: Response) => {
     timestamp: new Date().toISOString()
   });
 });
+
+app.use((_req, res) => {
+  res.status(404).json({ success: false, error: 'Ruta no encontrada.' });
+});
+
+app.use(globalErrorHandler);
 
 export default app;
