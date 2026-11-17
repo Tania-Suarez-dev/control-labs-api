@@ -7,14 +7,15 @@ const isCreateRoomDTO = (value: unknown): value is ICreateRoomDTO => {
   }
 
   const room = value as Record<string, unknown>;
+  const allowedFields = new Set(['nombre', 'bloque', 'capacidadPcs']);
   return (
+    Object.keys(room).every((key) => allowedFields.has(key)) &&
     typeof room.nombre === 'string' &&
     room.nombre.trim() !== '' &&
-    typeof room.capacidad === 'number' &&
-    Number.isInteger(room.capacidad) &&
-    room.capacidad > 0 &&
-    typeof room.ubicacion === 'string' &&
-    room.ubicacion.trim() !== ''
+    typeof room.bloque === 'string' &&
+    room.bloque.trim() !== '' &&
+    typeof room.capacidadPcs === 'number' &&
+    Number.isInteger(room.capacidadPcs)
   );
 };
 
@@ -28,7 +29,7 @@ export const validateCreateRoomPayload = (
   if (!isCreateRoomDTO(body)) {
     res.status(400).json({
       success: false,
-      error: 'Datos del ambiente inválidos.'
+      error: 'Datos de la sala inválidos.'
     });
     return;
   }

@@ -9,5 +9,3 @@ router.post('/', validateCreateRoomPayload, RoomController.createRoom);
 router.patch('/:id', RoomController.updateRoom);
  
 export default router;
- 
-
