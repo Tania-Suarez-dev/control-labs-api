@@ -1,6 +1,8 @@
+export const USER_ROLES = ['ADMIN', 'GUARDA', 'INSTRUCTOR'] as const;
+export type UserRole = (typeof USER_ROLES)[number];
+
 export interface ICreateUserDTO {
   nombre: string;
-  correo: string;
-  contrasena: string;
-  rol: string;
+  email: string;
+  rol: UserRole;
 }
