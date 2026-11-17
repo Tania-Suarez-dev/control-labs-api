@@ -1,5 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import { ICreateEquipmentDTO } from '../dtos/equipment.dtos';
+import { EQUIPMENT_TYPES, ICreateEquipmentDTO } from '../dtos/equipment.dtos';
+
+const isUuid = (value: unknown): value is string =>
+  typeof value === 'string' &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 
 const isCreateEquipmentDTO = (value: unknown): value is ICreateEquipmentDTO => {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -7,29 +11,24 @@ const isCreateEquipmentDTO = (value: unknown): value is ICreateEquipmentDTO => {
   }
 
   const equipment = value as Record<string, unknown>;
+  const allowedFields = new Set(['placaSena', 'codigoActivo', 'tipo', 'roomId']);
   return (
-    typeof equipment.serial === 'string' &&
-    equipment.serial.trim() !== '' &&
-    typeof equipment.nombre === 'string' &&
-    equipment.nombre.trim() !== '' &&
-    typeof equipment.roomId === 'number' &&
-    Number.isInteger(equipment.roomId) &&
-    equipment.roomId > 0
+    Object.keys(equipment).every((key) => allowedFields.has(key)) &&
+    typeof equipment.placaSena === 'string' &&
+    equipment.placaSena.trim() !== '' &&
+    typeof equipment.codigoActivo === 'string' &&
+    equipment.codigoActivo.trim() !== '' &&
+    typeof equipment.tipo === 'string' &&
+    (EQUIPMENT_TYPES as readonly string[]).includes(equipment.tipo) &&
+    isUuid(equipment.roomId)
   );
 };
 
-export const validateCreateEquipmentPayload = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void => {
+export const validateCreateEquipmentPayload = (req: Request, res: Response, next: NextFunction): void => {
   const body: unknown = req.body;
 
   if (!isCreateEquipmentDTO(body)) {
-    res.status(400).json({
-      success: false,
-      error: 'Datos del equipo inválidos.'
-    });
+    res.status(400).json({ success: false, error: 'Datos del equipo inválidos.' });
     return;
   }
 
