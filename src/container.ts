@@ -6,6 +6,8 @@ import { InMemoryRoomRepository } from './repositories/in-memory-room.repository
 import { RoomService } from './services/room.service';
 import { InMemoryEquipmentRepository } from './repositories/in-memory-equipment.repository';
 import { EquipmentService } from './services/equipment.service';
+import { InMemoryIncidentRepository } from './repositories/in-memory-incident.repository';
+import { IncidentService } from './services/incident.service';
 
 const loanRepository = new InMemoryLoanRepository();
 export const loanService = new LoanService(loanRepository);
@@ -18,3 +20,6 @@ export const roomService = new RoomService(roomRepository);
 
 const equipmentRepository = new InMemoryEquipmentRepository();
 export const equipmentService = new EquipmentService(equipmentRepository);
+
+const incidentRepository = new InMemoryIncidentRepository();
+export const incidentService = new IncidentService(incidentRepository);
