@@ -1,4 +1,5 @@
-import { InMemoryLoanRepository } from './repositories/in-memory-loan.repository';
+import { prisma } from './db/prisma';
+import { PrismaLoanRepository } from './repositories/prisma-loan.repository';
 import { LoanService } from './services/loan.service';
 import { InMemoryUserRepository } from './repositories/in-memory-user.repository';
 import { UserService } from './services/user.service';
@@ -9,7 +10,7 @@ import { EquipmentService } from './services/equipment.service';
 import { InMemoryIncidentRepository } from './repositories/in-memory-incident.repository';
 import { IncidentService } from './services/incident.service';
 
-const loanRepository = new InMemoryLoanRepository();
+const loanRepository = new PrismaLoanRepository(prisma);
 export const loanService = new LoanService(loanRepository);
 
 const userRepository = new InMemoryUserRepository();
