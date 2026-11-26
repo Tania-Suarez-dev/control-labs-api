@@ -6,3 +6,7 @@ export interface ICreateUserDTO {
   email: string;
   rol: UserRole;
 }
+
+export interface IUpdateUserRoleDTO {
+  rol: UserRole;
+}

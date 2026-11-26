@@ -1,7 +1,7 @@
 import { prisma } from './db/prisma';
 import { PrismaLoanRepository } from './repositories/prisma-loan.repository';
+import { PrismaUserRepository } from './repositories/prisma-user.repository';
 import { LoanService } from './services/loan.service';
-import { InMemoryUserRepository } from './repositories/in-memory-user.repository';
 import { UserService } from './services/user.service';
 import { InMemoryRoomRepository } from './repositories/in-memory-room.repository';
 import { RoomService } from './services/room.service';
@@ -13,7 +13,7 @@ import { IncidentService } from './services/incident.service';
 const loanRepository = new PrismaLoanRepository(prisma);
 export const loanService = new LoanService(loanRepository);
 
-const userRepository = new InMemoryUserRepository();
+const userRepository = new PrismaUserRepository(prisma);
 export const userService = new UserService(userRepository);
 
 const roomRepository = new InMemoryRoomRepository();
