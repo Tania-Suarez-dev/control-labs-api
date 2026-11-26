@@ -1,6 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
 import { userService } from '../container';
-import { ICreateUserDTO, IUpdateUserRoleDTO, UserRole } from '../dtos/user.dtos';
+import {
+  ICreateUserDTO,
+  IUpdateUserActiveDTO,
+  IUpdateUserRoleDTO,
+  UserRole
+} from '../dtos/user.dtos';
 
 export class UserController {
   public static getUsers = async (
@@ -52,6 +57,19 @@ export class UserController {
   ): Promise<void> => {
     try {
       const user = await userService.updateUserRole(req.params.id, req.body.rol);
+      res.status(200).json({ success: true, data: user });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public static setActiveState = async (
+    req: Request<{ id: string }, unknown, IUpdateUserActiveDTO>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const user = await userService.setActiveState(req.params.id, req.body.activo);
       res.status(200).json({ success: true, data: user });
     } catch (error) {
       next(error);

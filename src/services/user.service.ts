@@ -39,8 +39,8 @@ export class UserService {
     return updated;
   }
 
-  public async deleteUser(id: string): Promise<User> {
-    const updated = await this.userRepository.setActive(id, false, true);
+  public async setActiveState(id: string, activo: boolean): Promise<User> {
+    const updated = await this.userRepository.setActive(id, activo, !activo);
     if (updated) {
       return updated;
     }
@@ -49,6 +49,14 @@ export class UserService {
     if (!current) {
       throw new DomainError('NOT_FOUND', 'No existe el usuario.');
     }
-    throw new DomainError('CONFLICT', 'El usuario ya está inactivo.');
+
+    throw new DomainError(
+      'CONFLICT',
+      `El usuario ya está ${activo ? 'activo' : 'inactivo'}.`
+    );
+  }
+
+  public async deleteUser(id: string): Promise<User> {
+    return this.setActiveState(id, false);
   }
 }

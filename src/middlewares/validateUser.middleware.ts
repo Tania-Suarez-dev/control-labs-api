@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import {
   ICreateUserDTO,
+  IUpdateUserActiveDTO,
   IUpdateUserRoleDTO,
   USER_ROLES,
   UserRole
@@ -37,6 +38,18 @@ const isUpdateUserRoleDTO = (value: unknown): value is IUpdateUserRoleDTO => {
 
   const body = value as Record<string, unknown>;
   return Object.keys(body).every((key) => key === 'rol') && isRole(body.rol);
+};
+
+const isUpdateUserActiveDTO = (value: unknown): value is IUpdateUserActiveDTO => {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false;
+  }
+
+  const body = value as Record<string, unknown>;
+  return (
+    Object.keys(body).every((key) => key === 'activo') &&
+    typeof body.activo === 'boolean'
+  );
 };
 
 export const validateCreateUserPayload = (
@@ -102,6 +115,23 @@ export const validateUpdateUserRolePayload = (
       success: false,
       code: 'VALIDATION_ERROR',
       error: 'El rol debe ser ADMIN, GUARDA o INSTRUCTOR.'
+    });
+    return;
+  }
+  next();
+};
+
+export const validateUpdateUserActivePayload = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const body: unknown = req.body;
+  if (!isUpdateUserActiveDTO(body)) {
+    res.status(400).json({
+      success: false,
+      code: 'VALIDATION_ERROR',
+      error: 'El cuerpo debe contener únicamente "activo": true o false.'
     });
     return;
   }

@@ -10,3 +10,7 @@ export interface ICreateUserDTO {
 export interface IUpdateUserRoleDTO {
   rol: UserRole;
 }
+
+export interface IUpdateUserActiveDTO {
+  activo: boolean;
+}
