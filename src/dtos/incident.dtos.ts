@@ -6,11 +6,14 @@ export type IncidentStatus = (typeof INCIDENT_STATUSES)[number];
 
 export interface ICreateIncidentDTO {
   equipmentId: string;
-  reportedBy: string;
   descripcion: string;
   prioridad: IncidentPriority;
 }
 
 export interface IUpdateIncidentDTO {
   estado: IncidentStatus;
+}
+
+export interface ICreateIncidentCommentDTO {
+  contenido: string;
 }

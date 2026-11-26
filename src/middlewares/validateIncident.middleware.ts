@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import {
+  ICreateIncidentCommentDTO,
   ICreateIncidentDTO,
   IUpdateIncidentDTO,
   INCIDENT_PRIORITIES,
@@ -20,11 +21,10 @@ const isCreateIncidentDTO = (value: unknown): value is ICreateIncidentDTO => {
   }
 
   const incident = value as Record<string, unknown>;
-  const allowedFields = new Set(['equipmentId', 'reportedBy', 'descripcion', 'prioridad']);
+  const allowedFields = new Set(['equipmentId', 'descripcion', 'prioridad']);
   return (
     Object.keys(incident).every((key) => allowedFields.has(key)) &&
     isUuid(incident.equipmentId) &&
-    isUuid(incident.reportedBy) &&
     typeof incident.descripcion === 'string' &&
     incident.descripcion.trim() !== '' &&
     typeof incident.prioridad === 'string' &&
@@ -39,6 +39,19 @@ const isUpdateIncidentDTO = (value: unknown): value is IUpdateIncidentDTO => {
 
   const body = value as Record<string, unknown>;
   return Object.keys(body).length === 1 && isStatus(body.estado);
+};
+
+const isCreateIncidentCommentDTO = (value: unknown): value is ICreateIncidentCommentDTO => {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false;
+  }
+
+  const body = value as Record<string, unknown>;
+  return (
+    Object.keys(body).length === 1 &&
+    typeof body.contenido === 'string' &&
+    body.contenido.trim() !== ''
+  );
 };
 
 export const validateCreateIncidentPayload = (
@@ -79,6 +92,34 @@ export const validateIncidentIdParameter = (
   next();
 };
 
+export const validateIncidentSearchQuery = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const { roomId, estado } = req.query;
+
+  if (roomId !== undefined && !isUuid(roomId)) {
+    res.status(400).json({
+      success: false,
+      code: 'VALIDATION_ERROR',
+      error: 'El filtro roomId debe ser un UUID válido.'
+    });
+    return;
+  }
+
+  if (estado !== undefined && !isStatus(estado)) {
+    res.status(400).json({
+      success: false,
+      code: 'VALIDATION_ERROR',
+      error: 'El filtro estado debe ser PENDIENTE, EN_PROCESO o RESUELTA.'
+    });
+    return;
+  }
+
+  next();
+};
+
 export const validateUpdateIncidentPayload = (
   req: Request,
   res: Response,
@@ -90,6 +131,23 @@ export const validateUpdateIncidentPayload = (
       success: false,
       code: 'VALIDATION_ERROR',
       error: 'El estado debe ser PENDIENTE, EN_PROCESO o RESUELTA.'
+    });
+    return;
+  }
+  next();
+};
+
+export const validateIncidentCommentPayload = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const body: unknown = req.body;
+  if (!isCreateIncidentCommentDTO(body)) {
+    res.status(400).json({
+      success: false,
+      code: 'VALIDATION_ERROR',
+      error: 'Debe enviar contenido con texto válido.'
     });
     return;
   }
