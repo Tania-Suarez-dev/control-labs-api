@@ -25,6 +25,7 @@ export interface UserRepository {
   findAll(filters?: UserFilters): Promise<User[]>;
   findById(id: string): Promise<User | null>;
   findByEmail(email: string): Promise<AuthUser | null>;
+  findRoomIdsByUserId(userId: string): Promise<string[]>;
   updateRole(id: string, rol: UserRole): Promise<User | null>;
   setActive(id: string, activo: boolean, expectedActive: boolean): Promise<User | null>;
 }

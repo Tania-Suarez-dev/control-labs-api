@@ -18,6 +18,7 @@ model User {
   instructorLoans Loan[]     @relation("LoanInstructor")
   guardLoans      Loan[]     @relation("LoanGuard")
   incidents       Incident[] @relation("IncidentReporter")
+  userRooms       UserRoom[]
 
   @@map("users")
 }
@@ -30,36 +31,37 @@ model Room {
   estado       String      @default("OPERATIVO") @db.VarChar(20)
   equipment    Equipment[]
   loans        Loan[]
+  userRooms    UserRoom[]
 
   @@map("rooms")
 }
 
 model Equipment {
-  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  placaSena   String     @unique @map("placa_sena") @db.VarChar(50)
-  codigoActivo String    @unique @map("codigo_activo") @db.VarChar(100)
-  tipo        String     @db.VarChar(50)
-  roomId      String     @map("room_id") @db.Uuid
-  estado      String     @default("OPERATIVO") @db.VarChar(20)
-  room        Room       @relation(fields: [roomId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  incidents   Incident[]
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  placaSena    String     @unique @map("placa_sena") @db.VarChar(50)
+  codigoActivo String     @unique @map("codigo_activo") @db.VarChar(100)
+  tipo         String     @db.VarChar(50)
+  roomId       String     @map("room_id") @db.Uuid
+  estado       String     @default("OPERATIVO") @db.VarChar(20)
+  room         Room       @relation(fields: [roomId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  incidents    Incident[]
 
   @@index([roomId], map: "idx_equipment_room")
   @@map("equipment")
 }
 
 model Loan {
-  id           BigInt     @id @default(autoincrement())
-  roomId       String     @map("room_id") @db.Uuid
-  instructorId String     @map("instructor_id") @db.Uuid
-  guardaId     String     @map("guarda_id") @db.Uuid
-  numeroPc     Int        @map("numero_pc")
-  estado       String     @default("PENDIENTE_APROBACION") @db.VarChar(24)
-  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
-  acceptedAt   DateTime?  @map("accepted_at") @db.Timestamptz(6)
-  room         Room       @relation(fields: [roomId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  instructor   User       @relation("LoanInstructor", fields: [instructorId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  guard        User       @relation("LoanGuard", fields: [guardaId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  id           BigInt    @id @default(autoincrement())
+  roomId       String    @map("room_id") @db.Uuid
+  instructorId String    @map("instructor_id") @db.Uuid
+  guardaId     String    @map("guarda_id") @db.Uuid
+  numeroPc     Int       @map("numero_pc")
+  estado       String    @default("PENDIENTE_APROBACION") @db.VarChar(24)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  acceptedAt   DateTime? @map("accepted_at") @db.Timestamptz(6)
+  room         Room      @relation(fields: [roomId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  instructor   User      @relation("LoanInstructor", fields: [instructorId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  guard        User      @relation("LoanGuard", fields: [guardaId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@index([roomId, createdAt(sort: Desc)], map: "idx_loans_room_created")
   @@map("loans")
@@ -78,4 +80,15 @@ model Incident {
 
   @@index([equipmentId, estado], map: "idx_incidents_equipment_status")
   @@map("incidents")
+}
+
+model UserRoom {
+  userId String @map("user_id") @db.Uuid
+  roomId String @map("room_id") @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([userId, roomId])
+  @@index([roomId], map: "idx_user_rooms_room")
+  @@map("user_rooms")
 }

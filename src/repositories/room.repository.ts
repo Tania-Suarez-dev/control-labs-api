@@ -12,7 +12,8 @@ export interface RoomChanges {
 
 export interface RoomRepository {
   create(input: ICreateRoomDTO): Promise<Room>;
-  findAll(): Promise<Room[]>;
+  findAll(allowedRoomIds?: string[]): Promise<Room[]>;
+  findById(id: string): Promise<Room | null>;
   findByNombre(nombre: string): Promise<Room | null>;
   update(id: string, changes: RoomChanges): Promise<Room | null>;
 }

@@ -52,11 +52,20 @@ export class PrismaRoomRepository implements RoomRepository {
     }
   }
 
-  public async findAll(): Promise<Room[]> {
+  public async findAll(allowedRoomIds?: string[]): Promise<Room[]> {
     const rooms = await this.database.room.findMany({
+      where:
+        allowedRoomIds === undefined
+          ? undefined
+          : { id: { in: allowedRoomIds } },
       orderBy: { nombre: 'asc' }
     });
     return rooms.map((room) => this.toDomain(room));
+  }
+
+  public async findById(id: string): Promise<Room | null> {
+    const room = await this.database.room.findUnique({ where: { id } });
+    return room ? this.toDomain(room) : null;
   }
 
   public async findByNombre(nombre: string): Promise<Room | null> {

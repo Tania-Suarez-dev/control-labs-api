@@ -72,20 +72,28 @@ export class PrismaUserRepository implements UserRepository {
   }
 
   public async findByEmail(email: string): Promise<AuthUser | null> {
-  const user = await this.database.user.findUnique({ where: { email } });
-  if (!user) {
-    return null;
+    const user = await this.database.user.findUnique({ where: { email } });
+    if (!user) {
+      return null;
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      nombre: user.nombre,
+      rol: user.rol as UserRole,
+      activo: user.activo,
+      passwordHash: user.passwordHash
+    };
   }
 
-  return {
-    id: user.id,
-    email: user.email,
-    nombre: user.nombre,
-    rol: user.rol as UserRole,
-    activo: user.activo,
-    passwordHash: user.passwordHash
-  };
-}
+  public async findRoomIdsByUserId(userId: string): Promise<string[]> {
+    const rows = await this.database.userRoom.findMany({
+      where: { userId },
+      select: { roomId: true }
+    });
+    return rows.map((row) => row.roomId);
+  }
 
   public async updateRole(id: string, rol: UserRole): Promise<User | null> {
     try {
