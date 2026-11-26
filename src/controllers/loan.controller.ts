@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { loanService } from '../container';
 import { ICreateLoanDTO } from '../dtos/loan.dto';
+import { getAllowedRoomIds } from '../utils/access';
 
 export class LoanController {
   public static createLoan = async (
@@ -9,7 +10,7 @@ export class LoanController {
     next: NextFunction
   ): Promise<void> => {
     try {
-      const loan = await loanService.createLoan(req.body);
+      const loan = await loanService.createLoan(req.body, req.user!.id);
       res.status(201).json({ success: true, data: loan });
     } catch (error) {
       next(error);
@@ -22,7 +23,10 @@ export class LoanController {
     next: NextFunction
   ): Promise<void> => {
     try {
-      const loans = await loanService.getLoans({ roomId: req.query.roomId });
+      const loans = await loanService.getLoans(
+        { roomId: req.query.roomId },
+        getAllowedRoomIds(req.user)
+      );
       res.status(200).json({ success: true, data: loans });
     } catch (error) {
       next(error);
@@ -35,7 +39,10 @@ export class LoanController {
     next: NextFunction
   ): Promise<void> => {
     try {
-      const loan = await loanService.getLoanDetail(req.params.id);
+      const loan = await loanService.getLoanDetail(
+        req.params.id,
+        getAllowedRoomIds(req.user)
+      );
       res.status(200).json({ success: true, data: loan });
     } catch (error) {
       next(error);
@@ -48,7 +55,27 @@ export class LoanController {
     next: NextFunction
   ): Promise<void> => {
     try {
-      const loan = await loanService.acceptLoan(req.params.id);
+      const loan = await loanService.acceptLoan(
+        req.params.id,
+        req.user!.id,
+        getAllowedRoomIds(req.user)
+      );
+      res.status(200).json({ success: true, data: loan });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public static returnLoan = async (
+    req: Request<{ id: string }>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const loan = await loanService.returnLoan(
+        req.params.id,
+        getAllowedRoomIds(req.user)
+      );
       res.status(200).json({ success: true, data: loan });
     } catch (error) {
       next(error);

@@ -14,16 +14,21 @@ const isCreateLoanDTO = (value: unknown): value is ICreateLoanDTO => {
   const allowedFields = new Set([
     'roomId',
     'instructorId',
-    'guardaId',
-    'numeroPc'
+    'numeroPc',
+    'equipmentIds'
   ]);
+
   return (
     Object.keys(loan).every((key) => allowedFields.has(key)) &&
     isUuid(loan.roomId) &&
     isUuid(loan.instructorId) &&
-    isUuid(loan.guardaId) &&
     typeof loan.numeroPc === 'number' &&
-    Number.isInteger(loan.numeroPc)
+    Number.isInteger(loan.numeroPc) &&
+    loan.numeroPc > 0 &&
+    Array.isArray(loan.equipmentIds) &&
+    loan.equipmentIds.length > 0 &&
+    loan.equipmentIds.every(isUuid) &&
+    new Set(loan.equipmentIds).size === loan.equipmentIds.length
   );
 };
 
