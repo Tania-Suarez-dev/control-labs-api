@@ -11,6 +11,8 @@ export interface Loan extends ICreateLoanDTO {
 
 export interface LoanFilters {
   roomId?: string;
+  instructorId?: string;
+  guardaId?: string;
 }
 
 export interface LoanRepository {
@@ -22,4 +24,5 @@ export interface LoanRepository {
     expectedStatus: LoanStatus,
     status: LoanStatus
   ): Promise<Loan | null>;
+  isActiveInstructor(id: string): Promise<boolean>;
 }

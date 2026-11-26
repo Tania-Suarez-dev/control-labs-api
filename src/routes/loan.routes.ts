@@ -5,12 +5,33 @@ import {
   validateLoanPayload,
   validateLoanSearchQuery
 } from '../middlewares/validateLoan.middleware';
+import { authenticate, authorize } from '../middlewares/auth.middleware';
 
 const router = Router();
 
-router.post('/', validateLoanPayload, LoanController.createLoan);
-router.get('/search', validateLoanSearchQuery, LoanController.getLoansByFilter);
-router.get('/:id', validateLoanIdParameter, LoanController.getLoanById);
-router.put('/:id/accept', validateLoanIdParameter, LoanController.acceptLoanInventory);
+router.use(authenticate);
+
+router.post('/', authorize('GUARDA'), validateLoanPayload, LoanController.createLoan);
+
+router.get(
+  '/search',
+  authorize('ADMIN', 'GUARDA', 'INSTRUCTOR'),
+  validateLoanSearchQuery,
+  LoanController.getLoansByFilter
+);
+
+router.get(
+  '/:id',
+  authorize('ADMIN', 'GUARDA', 'INSTRUCTOR'),
+  validateLoanIdParameter,
+  LoanController.getLoanById
+);
+
+router.put(
+  '/:id/accept',
+  authorize('INSTRUCTOR'),
+  validateLoanIdParameter,
+  LoanController.acceptLoanInventory
+);
 
 export default router;

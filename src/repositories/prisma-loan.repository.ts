@@ -70,7 +70,11 @@ export class PrismaLoanRepository implements LoanRepository {
 
   public async findAll(filters: LoanFilters = {}): Promise<Loan[]> {
     const loans = await this.database.loan.findMany({
-      where: filters.roomId ? { roomId: filters.roomId } : undefined,
+      where: {
+        ...(filters.roomId ? { roomId: filters.roomId } : {}),
+        ...(filters.instructorId ? { instructorId: filters.instructorId } : {}),
+        ...(filters.guardaId ? { guardaId: filters.guardaId } : {})
+      },
       orderBy: { createdAt: 'desc' }
     });
     return loans.map((loan) => this.toDomain(loan));
@@ -81,6 +85,14 @@ export class PrismaLoanRepository implements LoanRepository {
       where: { id: BigInt(id) }
     });
     return loan ? this.toDomain(loan) : null;
+  }
+
+  public async isActiveInstructor(id: string): Promise<boolean> {
+    const instructor = await this.database.user.findFirst({
+      where: { id, rol: 'INSTRUCTOR', activo: true },
+      select: { id: true }
+    });
+    return instructor !== null;
   }
 
   public async updateStatus(
