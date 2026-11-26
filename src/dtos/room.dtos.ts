@@ -6,3 +6,8 @@ export interface ICreateRoomDTO {
   bloque: string;
   capacidadPcs: number;
 }
+
+export interface IUpdateRoomDTO {
+  capacidadPcs?: number;
+  estado?: RoomStatus;
+}
