@@ -1,29 +1,47 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { incidentService } from '../container';
-import { DomainError } from '../errors/domain.error';
-import { ICreateIncidentDTO } from '../dtos/incident.dtos';
+import { ICreateIncidentDTO, IUpdateIncidentDTO } from '../dtos/incident.dtos';
 
 export class IncidentController {
   public static createIncident = async (
     req: Request<Record<string, string>, unknown, ICreateIncidentDTO>,
-    res: Response
+    res: Response,
+    next: NextFunction
   ): Promise<void> => {
-    const incident = await incidentService.createIncident(req.body);
-    res.status(201).json({ success: true, data: incident });
-  };
-
-  public static getIncidents = async (req: Request, res: Response): Promise<void> => {
-    const incidents = await incidentService.getIncidents();
-    res.status(200).json({ success: true, data: incidents });
-  };
-
-  public static updateIncident = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
-    const { estado } = (req.body ?? {}) as { estado?: unknown };
-    if (typeof estado !== 'string') {
-      throw new DomainError('VALIDATION_ERROR', 'El campo estado es obligatorio y debe ser un texto.');
+    try {
+      const incident = await incidentService.createIncident(req.body);
+      res.status(201).json({ success: true, data: incident });
+    } catch (error) {
+      next(error);
     }
+  };
 
-    const incident = await incidentService.updateIncidentStatus(Number(req.params.id), estado);
-    res.status(200).json({ success: true, data: incident });
+  public static getIncidents = async (
+    _req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const incidents = await incidentService.getIncidents();
+      res.status(200).json({ success: true, data: incidents });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public static updateIncident = async (
+    req: Request<{ id: string }, unknown, IUpdateIncidentDTO>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const incident = await incidentService.updateIncidentStatus(
+        req.params.id,
+        req.body.estado
+      );
+      res.status(200).json({ success: true, data: incident });
+    } catch (error) {
+      next(error);
+    }
   };
 }

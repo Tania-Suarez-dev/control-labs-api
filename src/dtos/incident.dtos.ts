@@ -10,3 +10,7 @@ export interface ICreateIncidentDTO {
   descripcion: string;
   prioridad: IncidentPriority;
 }
+
+export interface IUpdateIncidentDTO {
+  estado: IncidentStatus;
+}
