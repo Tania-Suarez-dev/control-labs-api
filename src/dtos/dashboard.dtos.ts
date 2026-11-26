@@ -3,4 +3,9 @@ export interface DashboardSummaryDTO {
   ambientesActivos: number;
   equiposOperativos: number;
   novedadesCriticasSinResolver: number;
+  prestamosPendientes: number;
+  prestamosActivos: number;
+  equiposPrestados: number;
+  novedadesResueltas: number;
+  comentariosNovedades: number;
 }

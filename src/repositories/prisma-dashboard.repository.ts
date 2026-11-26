@@ -10,7 +10,12 @@ export class PrismaDashboardRepository implements DashboardRepository {
       totalUsuarios,
       ambientesActivos,
       equiposOperativos,
-      novedadesCriticasSinResolver
+      novedadesCriticasSinResolver,
+      prestamosPendientes,
+      prestamosActivos,
+      equiposPrestados,
+      novedadesResueltas,
+      comentariosNovedades
     ] = await Promise.all([
       this.database.user.count(),
       this.database.room.count({
@@ -24,14 +29,35 @@ export class PrismaDashboardRepository implements DashboardRepository {
           prioridad: 'ALTA',
           estado: { in: ['PENDIENTE', 'EN_PROCESO'] }
         }
-      })
+      }),
+      this.database.loan.count({
+        where: { estado: 'PENDIENTE_APROBACION' }
+      }),
+      this.database.loan.count({
+        where: {
+          estado: 'APROBADO_Y_FIRMADO',
+          loanItems: { some: { returnedAt: null } }
+        }
+      }),
+      this.database.loanEquipment.count({
+        where: { returnedAt: null }
+      }),
+      this.database.incident.count({
+        where: { estado: 'RESUELTA' }
+      }),
+      this.database.incidentComment.count()
     ]);
 
     return {
       totalUsuarios,
       ambientesActivos,
       equiposOperativos,
-      novedadesCriticasSinResolver
+      novedadesCriticasSinResolver,
+      prestamosPendientes,
+      prestamosActivos,
+      equiposPrestados,
+      novedadesResueltas,
+      comentariosNovedades
     };
   }
 }
