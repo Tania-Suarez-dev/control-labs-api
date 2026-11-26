@@ -11,12 +11,14 @@ import { RoomService } from './services/room.service';
 import { EquipmentService } from './services/equipment.service';
 import { IncidentService } from './services/incident.service';
 import { DashboardService } from './services/dashboard.service';
+import { AuthService } from './services/auth.service';
 
 const loanRepository = new PrismaLoanRepository(prisma);
 export const loanService = new LoanService(loanRepository);
 
 const userRepository = new PrismaUserRepository(prisma);
 export const userService = new UserService(userRepository);
+export const authService = new AuthService(userRepository);
 
 const roomRepository = new PrismaRoomRepository(prisma);
 export const roomService = new RoomService(roomRepository);

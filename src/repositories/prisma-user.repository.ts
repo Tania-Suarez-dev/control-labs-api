@@ -76,6 +76,15 @@ export class PrismaUserRepository implements UserRepository {
     return user ? this.toDomain(user) : null;
   }
 
+  public async findRoomIdsByUserId(id: string): Promise<string[]> {
+    const rows = await this.database.userRoom.findMany({
+      where: { userId: id },
+      select: { roomId: true }
+    });
+
+    return rows.map((row) => row.roomId);
+  }
+
   public async updateRole(id: string, rol: UserRole): Promise<User | null> {
     try {
       const result = await this.database.user.updateMany({
@@ -108,7 +117,8 @@ export class PrismaUserRepository implements UserRepository {
       email: user.email,
       rol: user.rol as UserRole,
       activo: user.activo,
-      createdAt: user.createdAt.toISOString()
+      createdAt: user.createdAt.toISOString(),
+      passwordHash: user.passwordHash
     };
   }
 }
