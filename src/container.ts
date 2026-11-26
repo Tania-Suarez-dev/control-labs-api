@@ -9,6 +9,8 @@ import { UserService } from './services/user.service';
 import { RoomService } from './services/room.service';
 import { EquipmentService } from './services/equipment.service';
 import { IncidentService } from './services/incident.service';
+import { InMemoryDashboardRepository } from './repositories/in-memory-dashboard.repository';
+import { DashboardService } from './services/dashboard.service';
 
 const loanRepository = new PrismaLoanRepository(prisma);
 export const loanService = new LoanService(loanRepository);
@@ -24,3 +26,6 @@ export const equipmentService = new EquipmentService(equipmentRepository);
 
 const incidentRepository = new PrismaIncidentRepository(prisma);
 export const incidentService = new IncidentService(incidentRepository);
+
+const dashboardRepository = new InMemoryDashboardRepository();
+export const dashboardService = new DashboardService(dashboardRepository);
