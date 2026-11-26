@@ -10,3 +10,8 @@ export interface ICreateEquipmentDTO {
   tipo: EquipmentType;
   roomId: string;
 }
+
+export interface IUpdateEquipmentDTO {
+  estado?: EquipmentStatus;
+  roomId?: string;
+}
