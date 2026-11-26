@@ -52,8 +52,9 @@ export class PrismaRoomRepository implements RoomRepository {
     }
   }
 
-  public async findAll(): Promise<Room[]> {
+  public async findAll(roomIds?: string[]): Promise<Room[]> {
     const rooms = await this.database.room.findMany({
+      where: roomIds ? { id: { in: roomIds } } : undefined,
       orderBy: { nombre: 'asc' }
     });
     return rooms.map((room) => this.toDomain(room));

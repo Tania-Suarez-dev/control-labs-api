@@ -1,5 +1,5 @@
 import { PrismaClient, Equipment as PrismaEquipment } from '@prisma/client';
-import { EquipmentStatus, ICreateEquipmentDTO } from '../dtos/equipment.dtos';
+import { EquipmentStatus, ICreateEquipmentDTO, IMoveEquipmentDTO } from '../dtos/equipment.dtos';
 import { DomainError } from '../errors/domain.error';
 import {
   Equipment,
@@ -67,10 +67,17 @@ export class PrismaEquipmentRepository implements EquipmentRepository {
 
   public async findAll(filters: EquipmentFilters = {}): Promise<Equipment[]> {
     const equipment = await this.database.equipment.findMany({
-      where: { roomId: filters.roomId },
+      where: filters.roomIds
+        ? { roomId: { in: filters.roomIds } }
+        : { roomId: filters.roomId },
       orderBy: { placaSena: 'asc' }
     });
     return equipment.map((item) => this.toDomain(item));
+  }
+
+  public async findById(id: string): Promise<Equipment | null> {
+    const equipment = await this.database.equipment.findUnique({ where: { id } });
+    return equipment ? this.toDomain(equipment) : null;
   }
 
   public async findByPlacaSena(placaSena: string): Promise<Equipment | null> {
@@ -98,6 +105,41 @@ export class PrismaEquipmentRepository implements EquipmentRepository {
       }
       const equipment = await this.database.equipment.findUnique({ where: { id } });
       return equipment ? this.toDomain(equipment) : null;
+    } catch (error) {
+      translatePersistenceError(error);
+      throw error;
+    }
+  }
+
+  public async move(
+    id: string,
+    input: IMoveEquipmentDTO,
+    movedBy: string
+  ): Promise<Equipment | null> {
+    try {
+      return await this.database.$transaction(async (tx) => {
+        const current = await tx.equipment.findUnique({ where: { id } });
+        if (!current) {
+          return null;
+        }
+
+        await tx.equipment.update({
+          where: { id },
+          data: { roomId: input.roomId }
+        });
+
+        await tx.equipmentMovement.create({
+          data: {
+            equipmentId: id,
+            fromRoomId: current.roomId,
+            toRoomId: input.roomId,
+            movedBy
+          }
+        });
+
+        const updated = await tx.equipment.findUnique({ where: { id } });
+        return updated ? this.toDomain(updated) : null;
+      });
     } catch (error) {
       translatePersistenceError(error);
       throw error;

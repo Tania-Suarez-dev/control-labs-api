@@ -19,6 +19,7 @@ model User {
   incidents       Incident[] @relation("IncidentReporter")
   passwordHash    String?    @map("password_hash")
   userRooms       UserRoom[]
+  equipmentMovements EquipmentMovement[]
 
   @@map("users")
 }
@@ -32,6 +33,8 @@ model Room {
   equipment    Equipment[]
   loans        Loan[]
   userRooms    UserRoom[]
+  movementsFrom EquipmentMovement[] @relation("MovementFrom")
+  movementsTo   EquipmentMovement[] @relation("MovementTo")
 
   @@map("rooms")
 }
@@ -45,6 +48,7 @@ model Equipment {
   estado       String     @default("OPERATIVO") @db.VarChar(20)
   room         Room       @relation(fields: [roomId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   incidents    Incident[]
+  movements EquipmentMovement[]
 
   @@index([roomId], map: "idx_equipment_room")
   @@map("equipment")
@@ -90,4 +94,21 @@ model UserRoom {
 
   @@id([userId, roomId])
   @@map("user_rooms")
+}
+
+model EquipmentMovement {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  equipmentId String   @map("equipment_id") @db.Uuid
+  fromRoomId  String   @map("from_room_id") @db.Uuid
+  toRoomId    String   @map("to_room_id") @db.Uuid
+  movedBy     String   @map("moved_by") @db.Uuid
+  movedAt     DateTime @default(now()) @map("moved_at") @db.Timestamptz(6)
+
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  fromRoom    Room      @relation("MovementFrom", fields: [fromRoomId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  toRoom      Room      @relation("MovementTo", fields: [toRoomId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  movedByUser User      @relation(fields: [movedBy], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([equipmentId, movedAt(sort: Desc)], map: "idx_equipment_movements_equipment")
+  @@map("equipment_movements")
 }

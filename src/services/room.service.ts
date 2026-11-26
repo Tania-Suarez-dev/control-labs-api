@@ -19,11 +19,19 @@ export class RoomService {
     });
   }
 
-  public getRooms(): Promise<Room[]> {
-    return this.roomRepository.findAll();
+  public getRooms(allowedRoomIds?: string[]): Promise<Room[]> {
+    return this.roomRepository.findAll(allowedRoomIds);
   }
 
-  public async updateRoom(id: string, changes: RoomChanges): Promise<Room> {
+  public async updateRoom(
+    id: string,
+    changes: RoomChanges,
+    allowedRoomIds?: string[]
+  ): Promise<Room> {
+    if (allowedRoomIds && !allowedRoomIds.includes(id)) {
+      throw new DomainError('FORBIDDEN', 'No tiene permiso sobre esa sala.');
+    }
+
     const updated = await this.roomRepository.update(id, changes);
     if (!updated) {
       throw new DomainError('NOT_FOUND', `No existe una sala con identificador ${id}.`);
