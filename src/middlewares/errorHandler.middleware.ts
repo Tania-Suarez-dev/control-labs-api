@@ -4,7 +4,9 @@ import { DomainError } from '../errors/domain.error';
 const domainErrorStatus: Record<DomainError['code'], number> = {
   VALIDATION_ERROR: 400,
   NOT_FOUND: 404,
-  CONFLICT: 409
+  CONFLICT: 409,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403
 };
 
 export const globalErrorHandler = (

@@ -10,6 +10,7 @@ datasource db {
 model User {
   id              String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   email           String     @unique @db.VarChar(255)
+  passwordHash    String?    @map("password_hash") @db.Text
   nombre          String     @db.VarChar(150)
   rol             String     @db.VarChar(20)
   activo          Boolean    @default(true)

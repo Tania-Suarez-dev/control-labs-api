@@ -1,7 +1,7 @@
 import { PrismaClient, User as PrismaUser } from '@prisma/client';
 import { ICreateUserDTO, UserRole } from '../dtos/user.dtos';
 import { DomainError } from '../errors/domain.error';
-import { User, UserFilters, UserRepository } from './user.repository';
+import { AuthUser, User, UserFilters, UserRepository } from './user.repository';
 
 const getDatabaseCode = (error: unknown): string | undefined => {
   if (typeof error !== 'object' || error === null) {
@@ -71,10 +71,21 @@ export class PrismaUserRepository implements UserRepository {
     return user ? this.toDomain(user) : null;
   }
 
-  public async findByEmail(email: string): Promise<User | null> {
-    const user = await this.database.user.findUnique({ where: { email } });
-    return user ? this.toDomain(user) : null;
+  public async findByEmail(email: string): Promise<AuthUser | null> {
+  const user = await this.database.user.findUnique({ where: { email } });
+  if (!user) {
+    return null;
   }
+
+  return {
+    id: user.id,
+    email: user.email,
+    nombre: user.nombre,
+    rol: user.rol as UserRole,
+    activo: user.activo,
+    passwordHash: user.passwordHash
+  };
+}
 
   public async updateRole(id: string, rol: UserRole): Promise<User | null> {
     try {
