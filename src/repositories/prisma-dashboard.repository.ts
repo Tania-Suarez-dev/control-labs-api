@@ -5,26 +5,53 @@ import { DashboardRepository } from './dashboard.repository';
 export class PrismaDashboardRepository implements DashboardRepository {
   constructor(private readonly database: PrismaClient) {}
 
-  public async getSummary(): Promise<DashboardSummaryDTO> {
+  public async getSummary(allowedRoomIds?: string[]): Promise<DashboardSummaryDTO> {
+    const rooms = allowedRoomIds ?? [];
+    const unresolvedCriticalStatuses = ['PENDIENTE', 'EN_PROCESO'];
+
     const [
       totalUsuarios,
       ambientesActivos,
       equiposOperativos,
       novedadesCriticasSinResolver
     ] = await Promise.all([
-      this.database.user.count(),
-      this.database.room.count({
-        where: { estado: 'OPERATIVO' }
-      }),
-      this.database.equipment.count({
-        where: { estado: 'OPERATIVO' }
-      }),
-      this.database.incident.count({
-        where: {
-          prioridad: 'ALTA',
-          estado: { in: ['PENDIENTE', 'EN_PROCESO'] }
-        }
-      })
+      allowedRoomIds
+        ? this.database.user.count({
+            where: {
+              userRooms: {
+                some: { roomId: { in: rooms } }
+              }
+            }
+          })
+        : this.database.user.count(),
+      allowedRoomIds
+        ? this.database.room.count({
+            where: { id: { in: rooms }, estado: 'OPERATIVO' }
+          })
+        : this.database.room.count({
+            where: { estado: 'OPERATIVO' }
+          }),
+      allowedRoomIds
+        ? this.database.equipment.count({
+            where: { roomId: { in: rooms }, estado: 'OPERATIVO' }
+          })
+        : this.database.equipment.count({
+            where: { estado: 'OPERATIVO' }
+          }),
+      allowedRoomIds
+        ? this.database.incident.count({
+            where: {
+              equipment: { roomId: { in: rooms } },
+              prioridad: 'ALTA',
+              estado: { in: unresolvedCriticalStatuses }
+            }
+          })
+        : this.database.incident.count({
+            where: {
+              prioridad: 'ALTA',
+              estado: { in: unresolvedCriticalStatuses }
+            }
+          })
     ]);
 
     return {

@@ -4,7 +4,7 @@ import { DashboardRepository } from '../repositories/dashboard.repository';
 export class DashboardService {
   constructor(private readonly dashboardRepository: DashboardRepository) {}
 
-  public getSummary(): Promise<DashboardSummaryDTO> {
-    return this.dashboardRepository.getSummary();
+  public getSummary(allowedRoomIds?: string[]): Promise<DashboardSummaryDTO> {
+    return this.dashboardRepository.getSummary(allowedRoomIds);
   }
 }
