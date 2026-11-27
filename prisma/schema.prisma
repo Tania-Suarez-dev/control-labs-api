@@ -20,6 +20,7 @@ model User {
   incidents       Incident[] @relation("IncidentReporter")
   userRooms       UserRoom[]
   equipmentMovements EquipmentMovement[] @relation("EquipmentMovedBy")
+  incidentComments IncidentComment[] @relation("IncidentCommentAuthor")
 
   @@map("users")
 }
@@ -81,6 +82,7 @@ model Incident {
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   reporter    User      @relation("IncidentReporter", fields: [reportedBy], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  comments    IncidentComment[]
 
   @@index([equipmentId, estado], map: "idx_incidents_equipment_status")
   @@map("incidents")
@@ -111,4 +113,18 @@ model EquipmentMovement {
 
   @@index([equipmentId, createdAt(sort: Desc)], map: "idx_equipment_movements_equipment_created")
   @@map("equipment_movements")
+}
+
+model IncidentComment {
+  id         BigInt   @id @default(autoincrement())
+  incidentId BigInt   @map("incident_id")
+  authorId   String   @map("author_id") @db.Uuid
+  tipo       String   @default("COMENTARIO") @db.VarChar(16)
+  contenido  String   @db.Text
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  incident   Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  author     User     @relation("IncidentCommentAuthor", fields: [authorId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([incidentId, createdAt(sort: Desc)], map: "idx_incident_comments_incident_created")
+  @@map("incident_comments")
 }
