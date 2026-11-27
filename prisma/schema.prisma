@@ -19,6 +19,7 @@ model User {
   guardLoans      Loan[]     @relation("LoanGuard")
   incidents       Incident[] @relation("IncidentReporter")
   userRooms       UserRoom[]
+  equipmentMovements EquipmentMovement[] @relation("EquipmentMovedBy")
 
   @@map("users")
 }
@@ -32,6 +33,8 @@ model Room {
   equipment    Equipment[]
   loans        Loan[]
   userRooms    UserRoom[]
+  outgoingMovements EquipmentMovement[] @relation("MovementFromRoom")
+  incomingMovements EquipmentMovement[] @relation("MovementToRoom")
 
   @@map("rooms")
 }
@@ -45,6 +48,7 @@ model Equipment {
   estado       String     @default("OPERATIVO") @db.VarChar(20)
   room         Room       @relation(fields: [roomId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   incidents    Incident[]
+  movements    EquipmentMovement[] @relation("EquipmentMovements")
 
   @@index([roomId], map: "idx_equipment_room")
   @@map("equipment")
@@ -91,4 +95,20 @@ model UserRoom {
   @@id([userId, roomId])
   @@index([roomId], map: "idx_user_rooms_room")
   @@map("user_rooms")
+}
+
+model EquipmentMovement {
+  id          BigInt    @id @default(autoincrement())
+  equipmentId String    @map("equipment_id") @db.Uuid
+  fromRoomId  String    @map("from_room_id") @db.Uuid
+  toRoomId    String    @map("to_room_id") @db.Uuid
+  movedBy     String    @map("moved_by") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  equipment   Equipment @relation("EquipmentMovements", fields: [equipmentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  fromRoom    Room      @relation("MovementFromRoom", fields: [fromRoomId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  toRoom      Room      @relation("MovementToRoom", fields: [toRoomId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  mover       User      @relation("EquipmentMovedBy", fields: [movedBy], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([equipmentId, createdAt(sort: Desc)], map: "idx_equipment_movements_equipment_created")
+  @@map("equipment_movements")
 }

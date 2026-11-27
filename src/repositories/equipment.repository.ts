@@ -16,8 +16,10 @@ export interface EquipmentChanges {
 
 export interface EquipmentRepository {
   create(input: ICreateEquipmentDTO): Promise<Equipment>;
-  findAll(filters?: EquipmentFilters): Promise<Equipment[]>;
+  findAll(filters?: EquipmentFilters, allowedRoomIds?: string[]): Promise<Equipment[]>;
+  findById(id: string): Promise<Equipment | null>;
   findByPlacaSena(placaSena: string): Promise<Equipment | null>;
   findByCodigoActivo(codigoActivo: string): Promise<Equipment | null>;
   update(id: string, changes: EquipmentChanges): Promise<Equipment | null>;
+  move(id: string, toRoomId: string, movedBy: string): Promise<Equipment | null>;
 }

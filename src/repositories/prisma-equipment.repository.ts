@@ -65,12 +65,26 @@ export class PrismaEquipmentRepository implements EquipmentRepository {
     }
   }
 
-  public async findAll(filters: EquipmentFilters = {}): Promise<Equipment[]> {
+  public async findAll(
+    filters: EquipmentFilters = {},
+    allowedRoomIds?: string[]
+  ): Promise<Equipment[]> {
+    const roomIdFilter = filters.roomId
+      ? filters.roomId
+      : allowedRoomIds === undefined
+        ? undefined
+        : { in: allowedRoomIds };
+
     const equipment = await this.database.equipment.findMany({
-      where: { roomId: filters.roomId },
+      where: { roomId: roomIdFilter },
       orderBy: { placaSena: 'asc' }
     });
     return equipment.map((item) => this.toDomain(item));
+  }
+
+  public async findById(id: string): Promise<Equipment | null> {
+    const equipment = await this.database.equipment.findUnique({ where: { id } });
+    return equipment ? this.toDomain(equipment) : null;
   }
 
   public async findByPlacaSena(placaSena: string): Promise<Equipment | null> {
@@ -98,6 +112,44 @@ export class PrismaEquipmentRepository implements EquipmentRepository {
       }
       const equipment = await this.database.equipment.findUnique({ where: { id } });
       return equipment ? this.toDomain(equipment) : null;
+    } catch (error) {
+      translatePersistenceError(error);
+      throw error;
+    }
+  }
+
+  public async move(
+    id: string,
+    toRoomId: string,
+    movedBy: string
+  ): Promise<Equipment | null> {
+    try {
+      return await this.database.$transaction(async (tx) => {
+        const current = await tx.equipment.findUnique({ where: { id } });
+        if (!current) {
+          return null;
+        }
+
+        if (current.roomId === toRoomId) {
+          throw new DomainError('CONFLICT', 'El equipo ya está en esa sala.');
+        }
+
+        const updated = await tx.equipment.update({
+          where: { id },
+          data: { roomId: toRoomId }
+        });
+
+        await tx.equipmentMovement.create({
+          data: {
+            equipmentId: id,
+            fromRoomId: current.roomId,
+            toRoomId,
+            movedBy
+          }
+        });
+
+        return this.toDomain(updated);
+      });
     } catch (error) {
       translatePersistenceError(error);
       throw error;

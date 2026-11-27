@@ -15,3 +15,7 @@ export interface IUpdateEquipmentDTO {
   estado?: EquipmentStatus;
   roomId?: string;
 }
+
+export interface IMoveEquipmentDTO {
+  roomId: string;
+}

@@ -4,6 +4,7 @@ import {
   EQUIPMENT_TYPES,
   EquipmentStatus,
   ICreateEquipmentDTO,
+  IMoveEquipmentDTO,
   IUpdateEquipmentDTO
 } from '../dtos/equipment.dtos';
 
@@ -56,6 +57,15 @@ const isUpdateEquipmentDTO = (value: unknown): value is IUpdateEquipmentDTO => {
   }
 
   return true;
+};
+
+const isMoveEquipmentDTO = (value: unknown): value is IMoveEquipmentDTO => {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false;
+  }
+
+  const body = value as Record<string, unknown>;
+  return Object.keys(body).every((key) => key === 'roomId') && isUuid(body.roomId);
 };
 
 export const validateCreateEquipmentPayload = (
@@ -118,6 +128,23 @@ export const validateUpdateEquipmentPayload = (
       success: false,
       code: 'VALIDATION_ERROR',
       error: 'Debe enviar estado o roomId con valores válidos.'
+    });
+    return;
+  }
+  next();
+};
+
+export const validateMoveEquipmentPayload = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const body: unknown = req.body;
+  if (!isMoveEquipmentDTO(body)) {
+    res.status(400).json({
+      success: false,
+      code: 'VALIDATION_ERROR',
+      error: 'El cuerpo debe contener únicamente "roomId" con un UUID válido.'
     });
     return;
   }
