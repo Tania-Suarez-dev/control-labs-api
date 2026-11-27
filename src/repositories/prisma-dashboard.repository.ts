@@ -13,6 +13,7 @@ export class PrismaDashboardRepository implements DashboardRepository {
       totalUsuarios,
       ambientesActivos,
       equiposOperativos,
+      equiposPrestados,
       novedadesCriticasSinResolver
     ] = await Promise.all([
       allowedRoomIds
@@ -24,6 +25,7 @@ export class PrismaDashboardRepository implements DashboardRepository {
             }
           })
         : this.database.user.count(),
+
       allowedRoomIds
         ? this.database.room.count({
             where: { id: { in: rooms }, estado: 'OPERATIVO' }
@@ -31,6 +33,7 @@ export class PrismaDashboardRepository implements DashboardRepository {
         : this.database.room.count({
             where: { estado: 'OPERATIVO' }
           }),
+
       allowedRoomIds
         ? this.database.equipment.count({
             where: { roomId: { in: rooms }, estado: 'OPERATIVO' }
@@ -38,6 +41,28 @@ export class PrismaDashboardRepository implements DashboardRepository {
         : this.database.equipment.count({
             where: { estado: 'OPERATIVO' }
           }),
+
+      allowedRoomIds
+        ? this.database.loanEquipment.count({
+            where: {
+              returnedAt: null,
+              loan: {
+                estado: 'APROBADO_Y_FIRMADO',
+                returnedAt: null,
+                roomId: { in: rooms }
+              }
+            }
+          })
+        : this.database.loanEquipment.count({
+            where: {
+              returnedAt: null,
+              loan: {
+                estado: 'APROBADO_Y_FIRMADO',
+                returnedAt: null
+              }
+            }
+          }),
+
       allowedRoomIds
         ? this.database.incident.count({
             where: {
@@ -58,6 +83,7 @@ export class PrismaDashboardRepository implements DashboardRepository {
       totalUsuarios,
       ambientesActivos,
       equiposOperativos,
+      equiposPrestados,
       novedadesCriticasSinResolver
     };
   }

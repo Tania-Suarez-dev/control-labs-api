@@ -11,7 +11,12 @@ const router = Router();
 
 router.use(authenticate);
 
-router.post('/', authorize('GUARDA'), validateLoanPayload, LoanController.createLoan);
+router.post(
+  '/',
+  authorize('ADMIN', 'GUARDA'),
+  validateLoanPayload,
+  LoanController.createLoan
+);
 
 router.get(
   '/search',
@@ -29,9 +34,16 @@ router.get(
 
 router.put(
   '/:id/accept',
-  authorize('INSTRUCTOR'),
+  authorize('ADMIN', 'GUARDA'),
   validateLoanIdParameter,
   LoanController.acceptLoanInventory
+);
+
+router.put(
+  '/:id/return',
+  authorize('ADMIN', 'GUARDA'),
+  validateLoanIdParameter,
+  LoanController.returnLoan
 );
 
 export default router;

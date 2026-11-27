@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { ICreateLoanRequestDTO } from '../dtos/loan.dto';
 
 const isUuid = (value: unknown): value is string =>
@@ -14,7 +14,8 @@ const isCreateLoanDTO = (value: unknown): value is ICreateLoanRequestDTO => {
   const allowedFields = new Set([
     'roomId',
     'instructorId',
-    'numeroPc'
+    'numeroPc',
+    'equipmentIds'
   ]);
 
   return (
@@ -22,7 +23,11 @@ const isCreateLoanDTO = (value: unknown): value is ICreateLoanRequestDTO => {
     isUuid(loan.roomId) &&
     isUuid(loan.instructorId) &&
     typeof loan.numeroPc === 'number' &&
-    Number.isInteger(loan.numeroPc)
+    Number.isInteger(loan.numeroPc) &&
+    Array.isArray(loan.equipmentIds) &&
+    loan.equipmentIds.length > 0 &&
+    loan.equipmentIds.every(isUuid) &&
+    new Set(loan.equipmentIds).size === loan.equipmentIds.length
   );
 };
 
@@ -32,6 +37,7 @@ export const validateLoanPayload = (
   next: NextFunction
 ): void => {
   const body: unknown = req.body;
+
   if (!isCreateLoanDTO(body)) {
     res.status(400).json({
       success: false,
@@ -39,6 +45,7 @@ export const validateLoanPayload = (
     });
     return;
   }
+
   next();
 };
 
